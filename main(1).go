@@ -1,34 +1,63 @@
 package main
 
 import (
-	"html/template"
+	"database/sql"
+	"fmt"
 	"log"
 	"net/http"
+
+	_ "github.com/lib/pq"
 )
 
-func home(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Welcome to quotebox."))
+func setUpDB(*sql.DB) (*sql.DB, error) {
+
+	const (
+		host     = "localhost"
+		port     = "5432"
+		user     = "admin"
+		password = "password"
+		dbname   = "users"
+	)
+
+	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
+	//	fmt.Println(dsn)
+	db, err := sql.Open("postgres", dsn)
+
+	if err != nil {
+		return nil, err
+	}
+	err = db.Ping()
+	if err != nil {
+		return nil, err
+	}
+
+	return db, nil
 }
 
-func createQuoteForm(w http.ResponseWriter, r *http.Request) {
-	ts, err := template.ParseFiles("/home/moises/Downloads/Last Class/quote_form_page.tmpl")
-	if err != nil {
-		log.Println(err.Error())
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		return
-	}
-	err = ts.Execute(w, nil)
-	if err != nil {
-		log.Println(err.Error())
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-	}
+type application struct {
+	db *sql.DB
 }
 
 func main() {
+
+	var db, err = setUpDB(nil)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer db.Close()
+
+	app := &application{
+		db: db,
+	}
+
 	mux := http.NewServeMux()
-	mux.HandleFunc("/", home)
-	mux.HandleFunc("/quote", createQuoteForm)
+	mux.HandleFunc("/", app.home)
+	mux.HandleFunc("/user", app.createUserForm)
+	mux.HandleFunc("/user-add", app.createUser)
+	mux.HandleFunc("/display", app.displayListings)
 	log.Println("Starting server on port :4000")
-	err := http.ListenAndServe(":4000", mux)
+	err = http.ListenAndServe(":4000", mux)
 	log.Fatal(err)
 }

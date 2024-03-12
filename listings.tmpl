@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Display Listings</title>
+</head>
+<body>
+    <header>
+        <h1>Displaying Listings:</h1>
+    </header>
+
+    <main>
+        <ul>
+            {{range .}}
+            <li>
+                <br>
+                <strong>Username:</strong> {{.Username}}<br>
+                <strong>First Name:</strong> {{.FirstName}}<br>
+                <strong>Last Name:</strong> {{.LastName}}<br>
+                <strong>NickName</strong> {{.NickName}}<br>
+                <strong>Sex:</strong> {{.Sex}}
+                <br>
+            </li>
+            {{end}}
+        </ul>
+    </main>
+    <br>
+    <br>
+    <a href="/">Click here to go back to homepage</a>
+    <br>
+    <a href="/user-add">Click here to go to Form</a>
+
+    
+</body>
+</html>
